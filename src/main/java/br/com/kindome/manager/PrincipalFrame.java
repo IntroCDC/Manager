@@ -10,7 +10,7 @@ import java.awt.*;
 public class PrincipalFrame extends JFrame {
 
     public PrincipalFrame(String user, String group) {
-        super("Tela Principal");
+        super("Tela Principal | Manager v" + ManagerMain.VERSION);
 
         try {
             UIManager.setLookAndFeel("javax.swing.plaf.nimbus.NimbusLookAndFeel");

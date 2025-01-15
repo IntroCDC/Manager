@@ -20,7 +20,7 @@ public class ServerStatusFrame extends JFrame {
     private final DefaultTableModel model;
 
     public ServerStatusFrame() {
-        super("Status dos Servidores");
+        super("Status dos Servidores | Manager v" + ManagerMain.VERSION);
 
         try {
             UIManager.setLookAndFeel("javax.swing.plaf.nimbus.NimbusLookAndFeel");

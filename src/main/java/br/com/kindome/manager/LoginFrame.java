@@ -20,7 +20,7 @@ public class LoginFrame extends JFrame {
     private static final File LOGIN_FILE = new File("login.json");
 
     public LoginFrame() {
-        super("Login");
+        super("Login | Manager v" + ManagerMain.VERSION);
 
         try {
             UIManager.setLookAndFeel("javax.swing.plaf.nimbus.NimbusLookAndFeel");

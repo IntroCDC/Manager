@@ -19,7 +19,7 @@ public class RunningRoomsFrame extends JFrame {
     private final JPanel roomsPanel;
 
     public RunningRoomsFrame() {
-        super("Salas Rodando");
+        super("Salas Rodando | Manager v" + ManagerMain.VERSION);
 
         try {
             UIManager.setLookAndFeel("javax.swing.plaf.nimbus.NimbusLookAndFeel");

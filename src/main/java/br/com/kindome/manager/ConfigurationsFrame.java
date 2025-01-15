@@ -15,7 +15,7 @@ import java.awt.*;
 public class ConfigurationsFrame extends JFrame {
 
     public ConfigurationsFrame() {
-        super("Configurações");
+        super("Configurações | Manager v" + ManagerMain.VERSION);
 
         try {
             UIManager.setLookAndFeel("javax.swing.plaf.nimbus.NimbusLookAndFeel");
@@ -48,7 +48,7 @@ public class ConfigurationsFrame extends JFrame {
 
         mainPanel.add(topPanel, BorderLayout.NORTH);
 
-        String[] colunas = { "Propriedade", "Valor" };
+        String[] colunas = {"Propriedade", "Valor"};
         DefaultTableModel model = new DefaultTableModel(colunas, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -62,7 +62,7 @@ public class ConfigurationsFrame extends JFrame {
                 JsonObject object = element.getAsJsonObject();
                 String name = object.get("name").getAsString();
                 String value = object.get("value").getAsString();
-                model.addRow(new Object[] { name, value });
+                model.addRow(new Object[]{name, value});
             }
         } catch (Exception e) {
             JOptionPane.showMessageDialog(

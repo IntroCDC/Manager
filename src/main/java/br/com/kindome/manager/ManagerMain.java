@@ -32,6 +32,7 @@ public class ManagerMain {
     public final static String FILE = "Manager.jar";
     public static final String REMOTE_MANAGER = "http://kindo.me/Manager.jar";
     public static final String UPDATER = "Updater.jar";
+    public static final String VERSION = "1.1";
 
     public static final JsonParser PARSER = new JsonParser();
 

@@ -26,7 +26,7 @@ public class ViewProfileFrame extends JFrame {
     private final JLabel descriptionTxt;
 
     public ViewProfileFrame() {
-        super("Visualizar Perfil");
+        super("Visualizar Perfil | Manager v" + ManagerMain.VERSION);
 
         try {
             UIManager.setLookAndFeel("javax.swing.plaf.nimbus.NimbusLookAndFeel");

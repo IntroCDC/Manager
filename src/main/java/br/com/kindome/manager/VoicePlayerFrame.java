@@ -19,7 +19,7 @@ public class VoicePlayerFrame extends JFrame {
     private Player currentPlayer;
 
     public VoicePlayerFrame() {
-        super("Reprodutor de Voz");
+        super("Reprodutor de Voz | Manager v" + ManagerMain.VERSION);
 
         try {
             UIManager.setLookAndFeel("javax.swing.plaf.nimbus.NimbusLookAndFeel");

@@ -21,7 +21,7 @@ public class OnlinePlayersFrame extends JFrame {
     private final JPanel serversPanel;
 
     public OnlinePlayersFrame() {
-        super("Jogadores Online");
+        super("Jogadores Online | Manager v" + ManagerMain.VERSION);
 
         try {
             UIManager.setLookAndFeel("javax.swing.plaf.nimbus.NimbusLookAndFeel");

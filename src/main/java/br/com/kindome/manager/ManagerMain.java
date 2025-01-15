@@ -7,12 +7,16 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 
 import javax.swing.*;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
@@ -25,11 +29,23 @@ import java.time.temporal.ChronoField;
 public class ManagerMain {
 
     public final static String API = "api.kindome.com.br";
+    public final static String FILE = "Manager.jar";
+    public static final String REMOTE_MANAGER = "http://kindo.me/Manager.jar";
+    public static final String UPDATER = "Updater.jar";
 
     public static final JsonParser PARSER = new JsonParser();
 
     public static void main(String[] args) {
-        new Thread(() -> startManager()).start();
+        if (getFileName().equalsIgnoreCase(UPDATER)) {
+            update();
+        } else {
+            deleteFile(new File(UPDATER));
+            deleteOldVersions();
+            if (verifyUpdate()) {
+                return;
+            }
+            startManager();
+        }
     }
 
     public static void startManager() {
@@ -40,6 +56,14 @@ public class ManagerMain {
         }
 
         SwingUtilities.invokeLater(() -> new LoginFrame().setVisible(true));
+    }
+
+    public static void deleteOldVersions() {
+        for (File file : new File(System.getProperty("user.dir")).listFiles()) {
+            if (file.getName().startsWith("Manager") && file.getName().endsWith(".jar") && !file.getName().equalsIgnoreCase(getFileName())) {
+                deleteFile(file);
+            }
+        }
     }
 
     public static String hashSha512(String passwordToHash) {
@@ -86,5 +110,147 @@ public class ManagerMain {
             .appendLiteral(':')
             .appendValue(ChronoField.SECOND_OF_MINUTE, 2)
             .toFormatter();
+
+    public static boolean verifyUpdate() {
+        long remoteSize = getRemoteFileSize(REMOTE_MANAGER);
+        long localSize = getLocalFileSize(getFileName());
+        if (localSize == -1) {
+            return false;
+        }
+        if (remoteSize != localSize) {
+            JOptionPane.showMessageDialog(null, "Baixando última versão do Manager...");
+            downloadFile(REMOTE_MANAGER, new File(UPDATER));
+            runJar(UPDATER);
+            return true;
+        }
+        JOptionPane.showMessageDialog(null, "Você está executando a última versão do Manager!");
+        return false;
+    }
+
+    public static void update() {
+        downloadFile(REMOTE_MANAGER, new File(FILE));
+        JOptionPane.showMessageDialog(null, "Versão atualizada baixada, reiniciando...");
+        runJar(FILE);
+    }
+
+    public static long getRemoteFileSize(String urlString) {
+        JOptionPane.showMessageDialog(null, "Verificando atualizações...");
+        try {
+            URL url = new URL(urlString);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("HEAD");
+            conn.connect();
+            if (conn.getResponseCode() == HttpURLConnection.HTTP_OK) {
+                return conn.getContentLengthLong();
+            }
+        } catch (Exception exception) {
+            JOptionPane.showMessageDialog(null, "Não foi possível conectar ao servidor api... " + exception.getMessage());
+            exception.printStackTrace();
+        }
+        return -1;
+    }
+
+    public static long getLocalFileSize(String localFileName) {
+        File f = new File(localFileName);
+        if (f.exists() && f.isFile()) {
+            return f.length();
+        }
+        return -1;
+    }
+
+    public static void runJar(String jarName) {
+        try {
+            ProcessBuilder pb = new ProcessBuilder(
+                    "java",
+                    "-jar",
+                    jarName
+            );
+            pb.inheritIO();
+            pb.start();
+            System.exit(0);
+        } catch (Exception exception) {
+            JOptionPane.showMessageDialog(null, "Ocorreu um erro ao executar o " + jarName);
+        }
+    }
+
+    public static boolean downloadFile(String URL, File destiny) {
+        try {
+            if (!destiny.exists()) {
+                if (destiny.getParentFile() != null) {
+                    destiny.getParentFile().mkdirs();
+                }
+                destiny.createNewFile();
+            }
+            URLConnection connection = new URL(URL).openConnection();
+            connection.addRequestProperty("User-Agent", "IntroCDC-Kindome");
+            if (destiny.exists() && destiny.length() == connection.getContentLengthLong()) {
+                return false;
+            }
+            try (BufferedInputStream in = new BufferedInputStream(connection.getInputStream()); FileOutputStream fout = new FileOutputStream(destiny)) {
+                byte[] data = new byte[1024];
+                int count;
+                while ((count = in.read(data, 0, 1024)) != -1) {
+                    fout.write(data, 0, count);
+                }
+                fout.flush();
+            }
+            return true;
+        } catch (Exception exception) {
+            JOptionPane.showMessageDialog(null, "Ocorreu um erro ao baixar a última versão do Manager!");
+        }
+        return false;
+    }
+
+    public static String getFileName() {
+        try {
+            String jarPath = ManagerMain.class.getProtectionDomain()
+                    .getCodeSource()
+                    .getLocation()
+                    .toURI()
+                    .getPath();
+
+            return jarPath.substring(jarPath.lastIndexOf("/") + 1);
+        } catch (Exception ignored) {
+        }
+        return "Manager.jar";
+    }
+
+    public static void deleteFile(File file) {
+        if (file.exists()) {
+            deleteFile(file.toPath());
+        }
+    }
+
+    public static void deleteFile(Path path) {
+        try {
+            Files.walkFileTree(path, new SimpleFileVisitor<Path>() {
+
+                private FileVisitResult handleException(IOException exception) {
+                    return FileVisitResult.TERMINATE;
+                }
+
+                @Override
+                public FileVisitResult postVisitDirectory(Path dir, IOException exception) throws IOException {
+                    if (exception != null) {
+                        return handleException(exception);
+                    }
+                    Files.delete(dir);
+                    return FileVisitResult.CONTINUE;
+                }
+
+                @Override
+                public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                    Files.delete(file);
+                    return FileVisitResult.CONTINUE;
+                }
+
+                @Override
+                public FileVisitResult visitFileFailed(Path file, IOException exception) {
+                    return handleException(exception);
+                }
+            });
+        } catch (Exception ignored) {
+        }
+    }
 
 }

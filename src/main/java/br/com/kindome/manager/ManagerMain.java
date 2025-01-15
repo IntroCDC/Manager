@@ -39,11 +39,11 @@ public class ManagerMain {
         if (getFileName().equalsIgnoreCase(UPDATER)) {
             update();
         } else {
-            deleteFile(new File(UPDATER));
             deleteOldVersions();
             if (verifyUpdate()) {
                 return;
             }
+            new Thread(() -> deleteFile(new File(UPDATER))).start();
             startManager();
         }
     }
@@ -123,7 +123,6 @@ public class ManagerMain {
             runJar(UPDATER);
             return true;
         }
-        JOptionPane.showMessageDialog(null, "Você está executando a última versão do Manager!");
         return false;
     }
 
@@ -134,7 +133,6 @@ public class ManagerMain {
     }
 
     public static long getRemoteFileSize(String urlString) {
-        JOptionPane.showMessageDialog(null, "Verificando atualizações...");
         try {
             URL url = new URL(urlString);
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
